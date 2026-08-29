@@ -30,10 +30,15 @@ public class Projectile : MonoBehaviour
     private void OnTriggerEnter2D(Collider2D collision)
     {
 
-        //if (collision.CompareTag("Player")) return;
+        if (collision.CompareTag("Player")) return;
         hit = true;
         boxCollider.enabled = false;
         anim.SetTrigger("explode");
+
+        if (collision.CompareTag("Enemy"))
+        {
+            collision.GetComponent<Health>().TakeDamage(1);
+        }
     }
     public void SetDirection(float _direction)
     {
