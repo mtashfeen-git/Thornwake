@@ -1,0 +1,15 @@
+using UnityEngine;
+
+public class Enemy_Damage : MonoBehaviour
+{
+    [Header("Damage")]
+    [SerializeField] protected float enemyDamage;
+
+    protected void OnTriggerEnter2D(Collider2D collision)
+    {
+        if(collision.CompareTag("Player"))
+        {
+            collision.GetComponent<Health>().TakeDamage(enemyDamage);
+        }
+    }
+}
