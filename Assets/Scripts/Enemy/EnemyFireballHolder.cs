@@ -2,15 +2,10 @@ using UnityEngine;
 
 public class EnemyFireballHolder : MonoBehaviour
 {
-    // Start is called once before the first execution of Update after the MonoBehaviour is created
-    void Start()
-    {
-        
-    }
+    [SerializeField] private Transform enemy;
 
-    // Update is called once per frame
-    void Update()
+    private void Update()
     {
-        
+        transform.localScale = enemy.localScale;
     }
 }

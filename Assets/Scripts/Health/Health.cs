@@ -13,7 +13,10 @@ public class Health : MonoBehaviour
     [SerializeField] private float iFrameDuration;
     [SerializeField] private int numberOfFlashes;
     private SpriteRenderer spriteRend;
-    private bool isInvincible; // NEW
+    private bool isInvincible; 
+
+    [Header("Components")]
+    [SerializeField] private Behaviour[] components;
 
     private void Awake()
     {
@@ -24,7 +27,7 @@ public class Health : MonoBehaviour
 
     public void TakeDamage(float _damage)
     {
-        if (isInvincible || dead) return; // NEW — this is the actual fix
+        if (isInvincible || dead) return; 
 
         currentHealth = Mathf.Clamp(currentHealth - _damage, 0, startingHealth);
 
@@ -39,16 +42,10 @@ public class Health : MonoBehaviour
             {
                 anim.SetTrigger("die");
 
-                //Player movement disabled
-                if (GetComponent<PlayerMovement>() != null)
-                    GetComponent<PlayerMovement>().enabled = false;
+                // Disable all attached component classes
+                foreach (Behaviour component in components)
+                    component.enabled = false;
 
-                //Enemy movement disabled
-                if (GetComponentInParent<EnemyPatrol>() != null)
-                    GetComponentInParent<EnemyPatrol>().enabled = false;
-
-                if (GetComponent<MeleeEnemy>() != null)
-                    GetComponent<MeleeEnemy>().enabled = false;
                 dead = true;
             }
         }
@@ -61,7 +58,7 @@ public class Health : MonoBehaviour
 
     private IEnumerator Invunerability()
     {
-        isInvincible = true; // NEW
+        isInvincible = true; 
         Physics2D.IgnoreLayerCollision(10, 11, true);
         for (int i = 0; i < numberOfFlashes; i++)
         {
@@ -72,6 +69,11 @@ public class Health : MonoBehaviour
         }
 
         Physics2D.IgnoreLayerCollision(10, 11, false);
-        isInvincible = false; // NEW
+        isInvincible = false; 
+    }
+
+    private void Deactivate()
+    {
+        gameObject.SetActive(false);
     }
 }

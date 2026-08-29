@@ -153,7 +153,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::Firetrap
   damage: 1
-  activationDelay: 2
+  activationDelay: 1
   activeTime: 2
 --- !u!95 &5267689882682229627
 Animator:
