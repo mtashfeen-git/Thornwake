@@ -3,13 +3,16 @@ using UnityEngine;
 public class HealthCollectable : MonoBehaviour
 {
     [SerializeField] private float healthValue;
+    [SerializeField] private AudioClip pickupSound;
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
 
        if(collision.CompareTag("Player"))
         {
+            SoundManager.instance.PlaySound(pickupSound);
             collision.GetComponent<Health>().AddHealth(healthValue);
+            
             Destroy(gameObject);
         }
     }

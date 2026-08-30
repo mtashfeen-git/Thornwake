@@ -18,6 +18,10 @@ public class Health : MonoBehaviour
     [Header("Components")]
     [SerializeField] private Behaviour[] components;
 
+    [Header("Sound")]
+    [SerializeField] private AudioClip hurtSound;
+    [SerializeField] private AudioClip deathSound;
+
     private void Awake()
     {
         currentHealth = startingHealth;
@@ -34,19 +38,22 @@ public class Health : MonoBehaviour
         if (currentHealth > 0)
         {
             anim.SetTrigger("hurt");
+            SoundManager.instance.PlaySound(hurtSound);
             StartCoroutine(Invunerability());
         }
         else
         {
             if (!dead)
             {
-                anim.SetTrigger("die");
-
+                
                 // Disable all attached component classes
                 foreach (Behaviour component in components)
                     component.enabled = false;
+                anim.SetBool("grounded", true);
+                anim.SetTrigger("die");
 
                 dead = true;
+                SoundManager.instance.PlaySound(deathSound);
             }
         }
     }
@@ -54,6 +61,18 @@ public class Health : MonoBehaviour
     public void AddHealth(float _value)
     {
         currentHealth = Mathf.Clamp(currentHealth + _value, 0, startingHealth);
+    }
+
+    public void Respawn()
+    {
+        dead = false;
+        AddHealth(startingHealth);
+        anim.ResetTrigger("die");
+        anim.Play("Idle");
+        StartCoroutine(Invunerability());
+        //Activate all attached component classes
+        foreach (Behaviour component in components)
+            component.enabled = true;
     }
 
     private IEnumerator Invunerability()

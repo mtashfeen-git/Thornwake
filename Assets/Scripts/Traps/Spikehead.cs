@@ -12,13 +12,29 @@ public class Spikehead : Enemy_Damage
     private Vector3 destination;
     private float checkTimer;
     private bool attacking;
+    private Health playerHealth;
+
+    [Header("SFX")]
+    [SerializeField] private AudioClip impactSound;
 
     private void OnEnable()
     {
         Stop();
     }
+    private void Start()
+    {
+        GameObject player = GameObject.FindGameObjectWithTag("Player");
+        if (player != null)
+            playerHealth = player.GetComponent<Health>();
+    }
     private void Update()
     {
+        if (playerHealth != null && playerHealth.currentHealth <= 0)
+        {
+            Stop();
+            return;
+        }
+
         //Move spikehead to destination only if attacking
         if (attacking)
             transform.Translate(destination * Time.deltaTime * speed);
@@ -62,6 +78,7 @@ public class Spikehead : Enemy_Damage
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        SoundManager.instance.PlaySound(impactSound); //Play impact sound
         base.OnTriggerEnter2D(collision);
         Stop(); //Stop spikehead once he hits something
     }

@@ -31,6 +31,9 @@ public class Projectile : MonoBehaviour
     {
 
         if (collision.CompareTag("Player")) return;
+        if (collision.CompareTag("CheckPoint")) return;
+    
+        
         hit = true;
         boxCollider.enabled = false;
         anim.SetTrigger("explode");
