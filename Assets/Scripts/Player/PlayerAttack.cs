@@ -1,11 +1,10 @@
-using Unity.VisualScripting;
 using UnityEngine;
 
 public class PlayerAttack : MonoBehaviour
 {
-    [SerializeField]private float attackCooldown;
-    [SerializeField]private Transform firePoint;
-    [SerializeField]private GameObject[] fireballs;
+    [SerializeField] private float attackCooldown;
+    [SerializeField] private Transform firePoint;
+    [SerializeField] private GameObject[] fireballs;
     [SerializeField] private AudioClip fireballSound;
     private Animator anim;
     private PlayerMovement playerMovement;
@@ -16,10 +15,22 @@ public class PlayerAttack : MonoBehaviour
         anim = GetComponent<Animator>();
         playerMovement = GetComponent<PlayerMovement>();
     }
-     private void Update()
+    private void Update()
     {
-        if(Input.GetMouseButtonDown(0) && cooldownTimer > attackCooldown && playerMovement.canAttack()) { 
+#if UNITY_EDITOR || UNITY_STANDALONE
+        bool mouseAttack = Input.GetMouseButtonDown(0);
+#else
+        bool mouseAttack = false;
+#endif
+
+        bool touchAttack = TouchInputManager.instance != null && TouchInputManager.instance.attackPressed;
+
+        if ((mouseAttack || touchAttack) && cooldownTimer > attackCooldown && playerMovement.canAttack())
+        {
             Attack();
+
+            if (touchAttack)
+                TouchInputManager.instance.ConsumeAttack();
         }
         cooldownTimer += Time.deltaTime;
     }

@@ -34,7 +34,6 @@ public class PlayerMovement : MonoBehaviour
     private float horizontalInput;
 
 
-
     private void Awake()
     {
         body = GetComponent<Rigidbody2D>();
@@ -45,35 +44,46 @@ public class PlayerMovement : MonoBehaviour
 
     private void Update()
     {
-
         horizontalInput = Input.GetAxis("Horizontal");
+        if (TouchInputManager.instance != null && TouchInputManager.instance.GetHorizontal() != 0)
+            horizontalInput = TouchInputManager.instance.GetHorizontal();
+
         //flip player when moving left or right
         if (horizontalInput > 0.01f)
             transform.localScale = Vector3.one;
         else if (horizontalInput < -0.01f)
             transform.localScale = new Vector3(-1, 1, 1);
+
         //set animator parameters
         anim.SetBool("run", horizontalInput != 0);
         anim.SetBool("grounded", isGrounded());
 
         //Jump
-        if (Input.GetKeyDown(KeyCode.Space))
+        if (Input.GetKeyDown(KeyCode.Space) || (TouchInputManager.instance != null && TouchInputManager.instance.jumpPressed))
+        {
             Jump();
-        //Adjectable Jump Height
-        if (Input.GetKeyUp(KeyCode.Space) && body.linearVelocity.y > 0)
+            if (TouchInputManager.instance != null)
+                TouchInputManager.instance.ConsumeJump();
+        }
+
+        //Adjustable Jump Height (works for both keyboard release and touch release)
+        bool touchJumpReleased = TouchInputManager.instance != null && TouchInputManager.instance.jumpReleased;
+
+        if ((Input.GetKeyUp(KeyCode.Space) || touchJumpReleased) && body.linearVelocity.y > 0)
             body.linearVelocity = new Vector2(body.linearVelocity.x, body.linearVelocity.y * 0.5f);
+
+        if (touchJumpReleased)
+            TouchInputManager.instance.ConsumeJumpReleased();
 
         bool touchingWall = onWall() && !isGrounded();
 
         if (touchingWall && wallJumpCounter > 0)
         {
-            // Still have wall jumps left — full stick, frozen in place
             body.gravityScale = 0;
             body.linearVelocity = Vector2.zero;
         }
         else if (touchingWall && wallJumpCounter <= 0)
         {
-            // Out of wall jumps — slide down slowly instead of free-falling or sticking
             body.gravityScale = 7;
             float clampedFallSpeed = Mathf.Max(body.linearVelocity.y, -wallSlideSpeed);
             body.linearVelocity = new Vector2(horizontalInput * speed, clampedFallSpeed);
@@ -85,13 +95,13 @@ public class PlayerMovement : MonoBehaviour
 
             if (isGrounded())
             {
-                coyoteCounter = coyoteTime; // Reset coyote counter when grounded
-                jumpCounter = maxJumps; // Reset jump counter when grounded
-                wallJumpCounter = maxWallJumps; // Reset wall jump counter when grounded
+                coyoteCounter = coyoteTime;
+                jumpCounter = maxJumps;
+                wallJumpCounter = maxWallJumps;
             }
             else
             {
-                coyoteCounter -= Time.deltaTime; // Decrease coyote counter when not grounded
+                coyoteCounter -= Time.deltaTime;
             }
         }
     }
@@ -102,7 +112,7 @@ public class PlayerMovement : MonoBehaviour
 
         if (onWall() && !isGrounded())
         {
-            if (wallJumpCounter <= 0) return; // no wall jumps left — don't play sound or jump
+            if (wallJumpCounter <= 0) return;
 
             SoundManager.instance.PlaySound(jumpSound);
             wallJump();
@@ -122,19 +132,19 @@ public class PlayerMovement : MonoBehaviour
                     if (jumpCounter > 0)
                     {
                         body.linearVelocity = new Vector2(body.linearVelocity.x, jumpPower);
-                        jumpCounter--; // Decrease jump counter after jumping
+                        jumpCounter--;
                     }
                 }
-
             }
-            coyoteCounter = 0; // Reset coyote counter after jumping
+            coyoteCounter = 0;
         }
     }
+
     private void wallJump()
     {
         body.AddForce(new Vector2(-Mathf.Sign(transform.localScale.x) * wallJumpX, wallJumpY));
         wallJumpCooldown = 0;
-        wallJumpCounter--; // Decrease wall jump counter after jumping
+        wallJumpCounter--;
     }
 
     private bool isGrounded()
@@ -142,6 +152,7 @@ public class PlayerMovement : MonoBehaviour
         RaycastHit2D raycasthit = Physics2D.BoxCast(boxCollider.bounds.center, boxCollider.bounds.size, 0f, Vector2.down, .1f, groundLayer);
         return raycasthit.collider != null;
     }
+
     private bool onWall()
     {
         RaycastHit2D raycasthit = Physics2D.BoxCast(boxCollider.bounds.center, boxCollider.bounds.size, 0f, new Vector2(transform.localScale.x, 0), .1f, wallLayer);
