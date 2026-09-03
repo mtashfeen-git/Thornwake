@@ -6,6 +6,10 @@ public class Door : MonoBehaviour
     [SerializeField] private Transform nextRoom;
     [SerializeField] private CameraController cam;
 
+    [Header("Level Exit")]
+    [SerializeField] private bool isLevelExit; // check this on the FINAL door only
+    [SerializeField] private UI_Manager uiManager;
+
     private void Awake()
     {
         cam = Camera.main.GetComponent<CameraController>();
@@ -15,6 +19,12 @@ public class Door : MonoBehaviour
     {
         if (collision.tag == "Player")
         {
+            if (isLevelExit)
+            {
+                uiManager.LevelComplete();
+                return; // don't run normal room-transition logic on the exit door
+            }
+
             if (collision.transform.position.x < transform.position.x)
             {
                 cam.MoveToNewRoom(nextRoom);

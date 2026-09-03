@@ -10,10 +10,15 @@ public class UI_Manager : MonoBehaviour
     [Header("Pause")]
     [SerializeField] private GameObject pauseScreen;
 
+    [Header("Level Complete")]
+    [SerializeField] private GameObject levelCompleteScreen;
+    [SerializeField] private AudioClip levelCompleteSound;
+
     private void Awake()
     {
         gameOverScreen.SetActive(false);
         pauseScreen.SetActive(false);
+        levelCompleteScreen.SetActive(false);
     }
     private void Update()
     {
@@ -77,6 +82,16 @@ public class UI_Manager : MonoBehaviour
     public void MusicVolume()
     {
         SoundManager.instance.ChangeMusicVolume(0.2f);
+    }
+    #endregion
+
+    #region Level Complete
+    //Activate level complete screen
+    public void LevelComplete()
+    {
+        levelCompleteScreen.SetActive(true);
+        SoundManager.instance.PlaySound(levelCompleteSound);
+        Time.timeScale = 0; // pause gameplay behind the screen, same as pause/game over
     }
     #endregion
 }

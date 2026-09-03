@@ -8,6 +8,8 @@ public class Spikehead : Enemy_Damage
     [SerializeField] private float range;
     [SerializeField] private float checkDelay;
     [SerializeField] private LayerMask playerLayer;
+    [SerializeField] private LayerMask wallLayer;
+    [SerializeField] private LayerMask groundLayer;
     private Vector3[] directions = new Vector3[4];
     private Vector3 destination;
     private float checkTimer;
@@ -49,17 +51,22 @@ public class Spikehead : Enemy_Damage
     {
         CalculateDirections();
 
-        //Check if spikehead sees player in all 4 directions
         for (int i = 0; i < directions.Length; i++)
         {
             Debug.DrawRay(transform.position, directions[i], Color.red);
-            RaycastHit2D hit = Physics2D.Raycast(transform.position, directions[i], range, playerLayer);
+
+            // Check player, wall, AND ground together — whichever the ray hits FIRST wins.
+            RaycastHit2D hit = Physics2D.Raycast(transform.position, directions[i].normalized, range, playerLayer | wallLayer | groundLayer);
 
             if (hit.collider != null && !attacking)
             {
-                attacking = true;
-                destination = directions[i];
-                checkTimer = 0;
+                // Only attack if what we hit is actually the player, not a wall or floor blocking the way
+                if (((1 << hit.collider.gameObject.layer) & playerLayer) != 0)
+                {
+                    attacking = true;
+                    destination = directions[i];
+                    checkTimer = 0;
+                }
             }
         }
     }
